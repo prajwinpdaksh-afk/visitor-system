@@ -1,0 +1,72 @@
+import { Hands } from '@mediapipe/hands';
+import * as THREE from 'three';
+import { gsap } from 'gsap';
+
+// --- THREE.JS SETUP ---
+const scene = new THREE.Scene();
+const count = 5000;
+const geometry = new THREE.BufferGeometry();
+const positions = new Float32Array(count * 3);
+const colors = new Float32Array(count * 3);
+
+geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+const material = new THREE.PointsMaterial({ 
+  size: 0.05, 
+  vertexColors: true, 
+  blending: THREE.AdditiveBlending 
+});
+const points = new THREE.Points(geometry, material);
+scene.add(points);
+
+// --- SHAPE TEMPLATES (Parametric Math) ---
+const shapes = {
+  sphere: (i) => {
+    const phi = Math.acos(-1 + (2 * i) / count);
+    const theta = Math.sqrt(count * Math.PI) * phi;
+    return [Math.cos(theta) * Math.sin(phi), Math.sin(theta) * Math.sin(phi), Math.cos(phi)];
+  },
+  heart: (i) => {
+    const t = (i / count) * Math.PI * 2;
+    const x = 16 * Math.pow(Math.sin(t), 3);
+    const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+    return [x * 0.1, y * 0.1, 0];
+  },
+  saturn: (i) => {
+    if (i < count * 0.6) return shapes.sphere(i); // Planet body
+    const t = (i / count) * Math.PI * 2; // Ring
+    return [Math.cos(t) * 2, (Math.random() - 0.5) * 0.1, Math.sin(t) * 2];
+  }
+};
+
+// --- HAND TRACKING LOGIC ---
+const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
+hands.onResults((results) => {
+  if (results.multiHandLandmarks.length > 0) {
+    const hand = results.multiHandLandmarks[0];
+    
+    // 1. Expansion: Distance between thumb and index
+    const dist = Math.hypot(hand[4].x - hand[8].x, hand[4].y - hand[8].y);
+    points.scale.setScalar(dist * 5);
+
+    // 2. Gesture Trigger: If hand is high, change to Heart
+    if (hand[8].y < 0.3) transitionTo('heart', 0xff0055);
+    else if (hand[8].x < 0.3) transitionTo('saturn', 0xffaa00);
+  }
+});
+
+// --- SMOOTH TRANSITION ENGINE ---
+function transitionTo(shapeName, hexColor) {
+  const targetColor = new THREE.Color(hexColor);
+  for (let i = 0; i < count; i++) {
+    const [nx, ny, nz] = shapes[shapeName](i);
+    
+    // Animate individual particle positions
+    gsap.to(geometry.attributes.position.array, {
+      [i * 3]: nx, [i * 3 + 1]: ny, [i * 3 + 2]: nz,
+      duration: 1.5,
+      onUpdate: () => geometry.attributes.position.needsUpdate = true
+    });
+  }
+}

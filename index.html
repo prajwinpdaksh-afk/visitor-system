@@ -64,24 +64,63 @@
   <tbody id="tableBody"></tbody>
 </table>
 
-<script>
-let visitors = JSON.parse(localStorage.getItem("visitors")) || [];
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-function saveData() {
-  localStorage.setItem("visitors", JSON.stringify(visitors));
-}
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyBZpR6uikU_8IYSyqz6WKWUTjy3cDdlJ4E",
+  authDomain: "visitor-system-78c4d.firebaseapp.com",
+  projectId: "visitor-system-78c4d",
+  storageBucket: "visitor-system-78c4d.firebasestorage.app",
+  messagingSenderId: "582473230963",
+  appId: "1:582473230963:web:b9972cbb68bed34da0d806"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const firebaseConfig = {
+  apiKey:// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyBZpR6uikU_8IYSyqz6WKWUTjy3cDdlJ4E",
+  authDomain: "visitor-system-78c4d.firebaseapp.com",
+  projectId: "visitor-system-78c4d",
+  storageBucket: "visitor-system-78c4d.firebasestorage.app",
+  messagingSenderId: "582473230963",
+  appId: "1:582473230963:web:b9972cbb68bed34da0d806"
+};
+
+// Initialize Firebase
+
+  
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const tableBody = document.getElementById("tableBody");
 
 function getTime() {
   return new Date().toLocaleTimeString();
 }
 
-function addVisitor() {
-  let name = document.getElementById("name").value;
-  let phone = document.getElementById("phone").value;
-  let purpose = document.getElementById("purpose").value;
-  let flat = document.getElementById("flat").value;
+window.addVisitor = async function () {
+  const name = document.getElementById("name").value;
+  const phone = document.getElementById("phone").value;
+  const purpose = document.getElementById("purpose").value;
+  const flat = document.getElementById("flat").value;
 
-  visitors.push({
+  await addDoc(collection(db, "visitors"), {
     name,
     phone,
     purpose,
@@ -90,36 +129,40 @@ function addVisitor() {
     exit: null
   });
 
-  saveData();
-  display();
-}
+  loadVisitors();
+};
 
-function exitVisitor(index) {
-  visitors[index].exit = getTime();
-  saveData();
-  display();
-}
+window.exitVisitor = async function (id) {
+  const ref = doc(db, "visitors", id);
+  await updateDoc(ref, {
+    exit: getTime()
+  });
 
-function display() {
-  let body = document.getElementById("tableBody");
-  body.innerHTML = "";
+  loadVisitors();
+};
 
-  visitors.forEach((v, i) => {
-    body.innerHTML += `
+async function loadVisitors() {
+  tableBody.innerHTML = "";
+
+  const querySnapshot = await getDocs(collection(db, "visitors"));
+  querySnapshot.forEach((docSnap) => {
+    const v = docSnap.data();
+
+    tableBody.innerHTML += `
       <tr>
         <td>${v.name}</td>
         <td>${v.flat}</td>
         <td>${v.entry}</td>
         <td>${v.exit || "Inside"}</td>
         <td>
-          ${!v.exit ? `<button onclick="exitVisitor(${i})">Exit</button>` : ""}
+          ${!v.exit ? `<button onclick="exitVisitor('${docSnap.id}')">Exit</button>` : ""}
         </td>
       </tr>
     `;
   });
 }
 
-display();
+loadVisitors();
 </script>
 
 </body>

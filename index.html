@@ -69,12 +69,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getFirestore, collection, addDoc, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
+
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
-const firebaseConfig = {
+
   apiKey: "AIzaSyBZpR6uikU_8IYSyqz6WKWUTjy3cDdlJ4E",
   authDomain: "visitor-system-78c4d.firebaseapp.com",
   projectId: "visitor-system-78c4d",
@@ -85,27 +85,9 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const firebaseConfig = {
-  apiKey:// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyBZpR6uikU_8IYSyqz6WKWUTjy3cDdlJ4E",
-  authDomain: "visitor-system-78c4d.firebaseapp.com",
-  projectId: "visitor-system-78c4d",
-  storageBucket: "visitor-system-78c4d.firebasestorage.app",
-  messagingSenderId: "582473230963",
-  appId: "1:582473230963:web:b9972cbb68bed34da0d806"
-};
+ 
 
-// Initialize Firebase
-
-  
-
-const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 const tableBody = document.getElementById("tableBody");
@@ -126,7 +108,7 @@ window.addVisitor = async function () {
     purpose,
     flat,
     entry: getTime(),
-    exit: null
+    exit: ""
   });
 
   loadVisitors();
